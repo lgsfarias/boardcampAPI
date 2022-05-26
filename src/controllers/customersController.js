@@ -68,7 +68,7 @@ export default class Customers {
                 [cpf]
             );
             if (cpfExists.rows.length > 0) {
-                return res.status(400).send('CPF already exists');
+                return res.status(409).send('CPF already exists');
             }
 
             const customer = await conection.query(
