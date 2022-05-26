@@ -17,4 +17,39 @@ export default class Games {
             return res.status(500).json({ message: error.message });
         }
     };
+
+    static createGame = async (req, res) => {
+        const { name, image, stockTotal, categoryId, pricePerDay } = req.body;
+        if (!name || !(stockTotal > 0) || !(pricePerDay > 0)) {
+            //TODO: melhorar as validaçoes
+            return res
+                .status(400)
+                .send('Name, stockTotal and pricePerDay are required');
+        }
+        try {
+            const categoryExists = await conection.query(
+                'SELECT * FROM categories WHERE id = $1',
+                [categoryId]
+            );
+            if (categoryExists.rows.length === 0) {
+                return res.status(400).send('Category not found');
+            }
+
+            const gameExists = await conection.query(
+                'SELECT * FROM games WHERE name = $1',
+                [name]
+            );
+            if (gameExists.rows.length > 0) {
+                return res.status(409).send('Game already exists');
+            }
+
+            await conection.query(
+                'INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5)',
+                [name, image, stockTotal, categoryId, pricePerDay]
+            );
+            return res.sendStatus(201);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    };
 }
