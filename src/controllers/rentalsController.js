@@ -1,3 +1,4 @@
+import moment from 'moment';
 import connection from '../config/database.js';
 
 export default class Rentals {
@@ -12,7 +13,6 @@ export default class Rentals {
             JOIN customers ON rentals."customerId" = customers.id`;
 
             let rentals = null;
-            console.log(rentals);
             if (customerId && gameId) {
                 rentals = await connection.query(
                     `${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2`,
@@ -116,6 +116,50 @@ export default class Rentals {
         } catch (err) {
             res.status(500).json({
                 message: 'Error creating rental',
+            });
+        }
+    };
+
+    static returnRental = async (req, res) => {
+        const rentalId = parseInt(req.params.id);
+
+        try {
+            const rental = await connection.query(
+                'SELECT * FROM rentals WHERE id = $1',
+                [rentalId]
+            );
+            if (rental.rows.length === 0) {
+                return res.status(400).send('Rental not found');
+            }
+            if (rental.rows[0].returnDate) {
+                return res.status(400).send('Game already returned');
+            }
+
+            const { rentDate, originalPrice, daysRented } = rental.rows[0];
+            const pricePerDay = originalPrice / daysRented;
+            const returnDate = new Date();
+            const returnDateMoment = moment(returnDate);
+            const rentDateMoment = moment(rentDate);
+            const dateSuposedToBeReturned = rentDateMoment.add(
+                daysRented,
+                'days'
+            );
+            const daysDelayed = returnDateMoment.diff(
+                dateSuposedToBeReturned,
+                'days'
+            );
+            const delayFee = daysDelayed > 0 ? daysDelayed * pricePerDay : 0;
+            console.log({ delayFee });
+
+            await connection.query(
+                `UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`,
+                [returnDate, delayFee, rentalId]
+            );
+
+            res.sendStatus(200);
+        } catch (err) {
+            res.status(500).json({
+                message: 'Error returning game',
             });
         }
     };
