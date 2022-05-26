@@ -10,7 +10,7 @@ export default class Games {
                     FROM games 
                     JOIN categories ON games."categoryId" = categories.id
                     WHERE games.name ~* $1`,
-                [name ? name : '']
+                [name ? `^${name}` : '']
             );
             return res.status(200).json(games.rows);
         } catch (error) {

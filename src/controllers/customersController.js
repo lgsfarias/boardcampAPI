@@ -6,8 +6,8 @@ export default class Customers {
         try {
             const customers = await conection.query(
                 `SELECT * FROM customers 
-                WHERE cpf LIKE $1`,
-                [cpf ? `${cpf}%` : '']
+                WHERE cpf ~* $1`,
+                [cpf ? `^${cpf}` : '']
             );
             return res.status(200).json(customers.rows);
         } catch (error) {
