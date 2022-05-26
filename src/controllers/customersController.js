@@ -14,4 +14,23 @@ export default class Customers {
             return res.status(500).json({ message: error.message });
         }
     };
+
+    static getCustomer = async (req, res) => {
+        const { id } = req.params;
+        try {
+            const customer = await conection.query(
+                `SELECT * FROM customers 
+                WHERE id = $1`,
+                [id]
+            );
+
+            if (customer.rows.length === 0) {
+                return res.status(404).send('Customer not found');
+            }
+
+            return res.status(200).json(customer.rows[0]);
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
+        }
+    };
 }
