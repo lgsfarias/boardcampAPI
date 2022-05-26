@@ -74,4 +74,49 @@ export default class Rentals {
             });
         }
     };
+
+    static createRental = async (req, res) => {
+        const { customerId, gameId, daysRented } = req.body;
+        if (daysRented < 1) {
+            return res.status(400).send('Days rented must be greater than 0');
+        }
+
+        try {
+            const game = await connection.query(
+                'SELECT * FROM games WHERE id = $1',
+                [gameId]
+            );
+            if (game.rows.length === 0) {
+                return res.status(400).send('Game not found');
+            }
+            const originalPrice = game.rows[0].pricePerDay * daysRented;
+
+            const customer = await connection.query(
+                'SELECT * FROM customers WHERE id = $1',
+                [customerId]
+            );
+            if (customer.rows.length === 0) {
+                return res.status(400).send('Customer not found');
+            }
+
+            await connection.query(
+                `INSERT INTO rentals 
+                ("customerId", 
+                "gameId", 
+                "rentDate", 
+                "daysRented", 
+                "returnDate", 
+                "originalPrice", 
+                "delayFee") 
+                VALUES ($1, $2, $3, $4, null, $5, null)`,
+                [customerId, gameId, new Date(), daysRented, originalPrice]
+            );
+
+            res.sendStatus(201);
+        } catch (err) {
+            res.status(500).json({
+                message: 'Error creating rental',
+            });
+        }
+    };
 }
