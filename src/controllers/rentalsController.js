@@ -2,15 +2,36 @@ import connection from '../config/database.js';
 
 export default class Rentals {
     static getRentals = async (req, res) => {
+        const { customerId, gameId } = req.query;
+
         try {
-            const rentals = await connection.query(
-                `SELECT rentals.*, games.name AS "gameName", games."categoryId", customers.name AS "customerName", categories.name AS "categoryName"
-                FROM rentals
-                JOIN games ON rentals."gameId" = games.id
-                JOIN categories ON games."categoryId" = categories.id
-                JOIN customers ON rentals."customerId" = customers.id
-                `
-            );
+            const query = `SELECT rentals.*, games.name AS "gameName", games."categoryId", customers.name AS "customerName", categories.name AS "categoryName"
+            FROM rentals
+            JOIN games ON rentals."gameId" = games.id
+            JOIN categories ON games."categoryId" = categories.id
+            JOIN customers ON rentals."customerId" = customers.id`;
+
+            let rentals = null;
+            console.log(rentals);
+            if (customerId && gameId) {
+                rentals = await connection.query(
+                    `${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2`,
+                    [customerId, gameId]
+                );
+            } else if (customerId) {
+                rentals = await connection.query(
+                    `${query} WHERE rentals."customerId" = $1`,
+                    [customerId]
+                );
+            } else if (gameId) {
+                rentals = await connection.query(
+                    `${query} WHERE rentals."gameId" = $1`,
+                    [gameId]
+                );
+            } else {
+                rentals = await connection.query(query);
+            }
+
             const rows = rentals.rows.map(
                 ({
                     id,
