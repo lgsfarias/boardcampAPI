@@ -4,7 +4,7 @@ import connection from '../config/database.js';
 
 export default class Rentals {
     static getRentals = async (req, res) => {
-        const { customerId, gameId } = req.query;
+        const { customerId, gameId, status } = req.query;
 
         const offset = req.query.offset
             ? `OFFSET ${SqlString.escape(req.query.offset)}`
@@ -24,6 +24,15 @@ export default class Rentals {
 
         if (gameId) {
             filters.push(`rentals."gameId" = ${SqlString.escape(gameId)}`);
+        }
+
+        if (status) {
+            if (status === 'open') {
+                filters.push(`rentals."returnDate" IS NULL`);
+            }
+            if (status === 'closed') {
+                filters.push(`rentals."returnDate" IS NOT NULL`);
+            }
         }
 
         const where =
