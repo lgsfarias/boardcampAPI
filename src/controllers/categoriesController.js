@@ -1,15 +1,20 @@
+import SqlString from 'sqlstring';
 import connection from '../config/database.js';
 
 export default class Categories {
     static getCategories = async (req, res) => {
-        const offset = req.query.offset || 0;
-        const limit = req.query.limit || 10000;
-        //FIXME: encontrar uma forma mais elegante pro limit
+        const offset = req.query.offset
+            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+            : '';
+
+        const limit = req.query.limit
+            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+            : '';
+
         try {
             const query = 'SELECT * FROM categories';
             const categories = await connection.query(
-                `${query} OFFSET $1 LIMIT $2`,
-                [offset, limit]
+                `${query} ${offset} ${limit}`
             );
 
             return res.status(200).json(categories.rows);

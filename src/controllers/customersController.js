@@ -1,16 +1,24 @@
+import SqlString from 'sqlstring';
 import connection from '../config/database.js';
 
 export default class Customers {
     static getCustomers = async (req, res) => {
-        const offset = req.query.offset || 0;
-        const limit = req.query.limit || 10000;
+        const offset = req.query.offset
+            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+            : '';
+
+        const limit = req.query.limit
+            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+            : '';
+
         const cpf = req.query.cpf || '';
-        console.log(cpf);
+
         try {
             const query = 'SELECT * FROM customers';
             const customers = await connection.query(
-                `${query} WHERE cpf LIKE $1 OFFSET $2 LIMIT $3`,
-                [`${cpf}%`, offset, limit]
+                `${query} WHERE cpf LIKE $1 
+                ${offset} ${limit}`,
+                [`${cpf}%`]
             );
 
             return res.status(200).json(customers.rows);

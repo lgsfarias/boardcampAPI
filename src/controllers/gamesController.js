@@ -1,21 +1,30 @@
+import SqlString from 'sqlstring';
 import connection from '../config/database.js';
 
 export default class Games {
     static getGames = async (req, res) => {
-        const offset = req.query.offset || 0;
-        const limit = req.query.limit || 10000;
+        const offset = req.query.offset
+            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+            : '';
+
+        const limit = req.query.limit
+            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+            : '';
+
         const name = req.query.name || '';
 
         try {
+            const query = `SELECT games.*, categories.name AS "categoryName"
+            FROM games
+            JOIN categories ON games."categoryId" = categories.id`;
+
             const games = await connection.query(
-                `SELECT games.*,
-                categories.name AS "categoryName" 
-                    FROM games 
-                    JOIN categories ON games."categoryId" = categories.id
-                    WHERE games.name LIKE $1
-                    OFFSET $2 LIMIT $3`,
-                [`%${name}%`, offset, limit]
+                `${query} 
+                WHERE games.name ILIKE $1
+                ${offset} ${limit}`,
+                [`${name}%`]
             );
+
             return res.status(200).json(games.rows);
         } catch (error) {
             return res.status(500).json({ message: error.message });

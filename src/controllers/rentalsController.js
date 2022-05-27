@@ -1,9 +1,18 @@
 import moment from 'moment';
+import SqlString from 'sqlstring';
 import connection from '../config/database.js';
 
 export default class Rentals {
     static getRentals = async (req, res) => {
         const { customerId, gameId } = req.query;
+
+        const offset = req.query.offset
+            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+            : '';
+
+        const limit = req.query.limit
+            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+            : '';
 
         try {
             const query = `SELECT rentals.*, games.name AS "gameName", games."categoryId", customers.name AS "customerName", categories.name AS "categoryName"
@@ -15,17 +24,20 @@ export default class Rentals {
             let rentals = null;
             if (customerId && gameId) {
                 rentals = await connection.query(
-                    `${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2`,
+                    `${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2
+                    ${offset} ${limit}`,
                     [customerId, gameId]
                 );
             } else if (customerId) {
                 rentals = await connection.query(
-                    `${query} WHERE rentals."customerId" = $1`,
+                    `${query} WHERE rentals."customerId" = $1
+                    ${offset} ${limit}`,
                     [customerId]
                 );
             } else if (gameId) {
                 rentals = await connection.query(
-                    `${query} WHERE rentals."gameId" = $1`,
+                    `${query} WHERE rentals."gameId" = $1
+                    ${offset} ${limit}`,
                     [gameId]
                 );
             } else {
