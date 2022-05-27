@@ -14,6 +14,21 @@ export default class Rentals {
             ? `LIMIT ${SqlString.escape(req.query.limit)}`
             : '';
 
+        const filters = [];
+
+        if (customerId) {
+            filters.push(
+                `rentals."customerId" = ${SqlString.escape(customerId)}`
+            );
+        }
+
+        if (gameId) {
+            filters.push(`rentals."gameId" = ${SqlString.escape(gameId)}`);
+        }
+
+        const where =
+            filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
+
         try {
             const query = `SELECT rentals.*, games.name AS "gameName", games."categoryId", customers.name AS "customerName", categories.name AS "categoryName"
             FROM rentals
@@ -21,28 +36,9 @@ export default class Rentals {
             JOIN categories ON games."categoryId" = categories.id
             JOIN customers ON rentals."customerId" = customers.id`;
 
-            let rentals = null;
-            if (customerId && gameId) {
-                rentals = await connection.query(
-                    `${query} WHERE rentals."customerId" = $1 AND rentals."gameId" = $2
-                    ${offset} ${limit}`,
-                    [customerId, gameId]
-                );
-            } else if (customerId) {
-                rentals = await connection.query(
-                    `${query} WHERE rentals."customerId" = $1
-                    ${offset} ${limit}`,
-                    [customerId]
-                );
-            } else if (gameId) {
-                rentals = await connection.query(
-                    `${query} WHERE rentals."gameId" = $1
-                    ${offset} ${limit}`,
-                    [gameId]
-                );
-            } else {
-                rentals = await connection.query(query);
-            }
+            const rentals = await connection.query(
+                `${query} ${where} ${offset} ${limit}`
+            );
 
             const rows = rentals.rows.map(
                 ({
