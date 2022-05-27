@@ -1,10 +1,10 @@
-import conection from '../config/database.js';
+import connection from '../config/database.js';
 
 export default class Customers {
     static getCustomers = async (req, res) => {
         const { cpf } = req.query;
         try {
-            const customers = await conection.query(
+            const customers = await connection.query(
                 `SELECT * FROM customers 
                 WHERE cpf ~* $1`,
                 [cpf ? `^${cpf}` : '']
@@ -18,7 +18,7 @@ export default class Customers {
     static getCustomer = async (req, res) => {
         const { id } = req.params;
         try {
-            const customer = await conection.query(
+            const customer = await connection.query(
                 `SELECT * FROM customers 
                 WHERE id = $1`,
                 [id]
@@ -62,7 +62,7 @@ export default class Customers {
                 .send('Birthday must be a string with format YYYY-MM-DD');
         }
         try {
-            const cpfExists = await conection.query(
+            const cpfExists = await connection.query(
                 `SELECT * FROM customers
                 WHERE cpf = $1`,
                 [cpf]
@@ -71,7 +71,7 @@ export default class Customers {
                 return res.status(409).send('CPF already exists');
             }
 
-            const customer = await conection.query(
+            const customer = await connection.query(
                 `INSERT INTO customers (name,phone,cpf,birthday) 
                 VALUES ($1,$2,$3,$4)`,
                 [name, phone, cpf, birthday]
@@ -114,7 +114,7 @@ export default class Customers {
         // }
 
         try {
-            const cpfExists = await conection.query(
+            const cpfExists = await connection.query(
                 `SELECT * FROM customers
                 WHERE cpf = $1 AND id != $2`,
                 [cpf, id]
@@ -123,7 +123,7 @@ export default class Customers {
                 return res.status(409).send('CPF already exists');
             }
 
-            const customer = await conection.query(
+            const customer = await connection.query(
                 `UPDATE customers SET name = $1, phone = $2, cpf = $3, birthday = $4
                 WHERE id = $5`,
                 [name, phone, cpf, birthday, id]

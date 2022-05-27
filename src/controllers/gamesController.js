@@ -1,10 +1,10 @@
-import conection from '../config/database.js';
+import connection from '../config/database.js';
 
 export default class Games {
     static getGames = async (req, res) => {
         const { name } = req.query;
         try {
-            const games = await conection.query(
+            const games = await connection.query(
                 `SELECT games.*,
                 categories.name AS "categoryName" 
                     FROM games 
@@ -27,7 +27,7 @@ export default class Games {
                 .send('Name, stockTotal and pricePerDay are required');
         }
         try {
-            const categoryExists = await conection.query(
+            const categoryExists = await connection.query(
                 'SELECT * FROM categories WHERE id = $1',
                 [categoryId]
             );
@@ -35,7 +35,7 @@ export default class Games {
                 return res.status(400).send('Category not found');
             }
 
-            const gameExists = await conection.query(
+            const gameExists = await connection.query(
                 'SELECT * FROM games WHERE name = $1',
                 [name]
             );
@@ -43,7 +43,7 @@ export default class Games {
                 return res.status(409).send('Game already exists');
             }
 
-            await conection.query(
+            await connection.query(
                 'INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5)',
                 [name, image, stockTotal, categoryId, pricePerDay]
             );
