@@ -163,4 +163,31 @@ export default class Rentals {
             });
         }
     };
+
+    static deleteRental = async (req, res) => {
+        const rentalId = parseInt(req.params.id);
+
+        try {
+            const rental = await connection.query(
+                'SELECT * FROM rentals WHERE id = $1',
+                [rentalId]
+            );
+            if (rental.rows.length === 0) {
+                return res.status(400).send('Rental not found');
+            }
+            if (rental.rows[0].returnDate) {
+                return res.status(400).send('Game already returned');
+            }
+
+            await connection.query(`DELETE FROM rentals WHERE id = $1`, [
+                rentalId,
+            ]);
+
+            res.sendStatus(200);
+        } catch (err) {
+            res.status(500).json({
+                message: 'Error deleting rental',
+            });
+        }
+    };
 }
