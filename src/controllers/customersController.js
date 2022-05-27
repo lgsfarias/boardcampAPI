@@ -2,13 +2,17 @@ import connection from '../config/database.js';
 
 export default class Customers {
     static getCustomers = async (req, res) => {
-        const { cpf } = req.query;
+        const offset = req.query.offset || 0;
+        const limit = req.query.limit || 10000;
+        const cpf = req.query.cpf || '';
+        console.log(cpf);
         try {
+            const query = 'SELECT * FROM customers';
             const customers = await connection.query(
-                `SELECT * FROM customers 
-                WHERE cpf ~* $1`,
-                [cpf ? `^${cpf}` : '']
+                `${query} WHERE cpf LIKE $1 OFFSET $2 LIMIT $3`,
+                [`${cpf}%`, offset, limit]
             );
+
             return res.status(200).json(customers.rows);
         } catch (error) {
             return res.status(500).json({ message: error.message });
