@@ -11,7 +11,22 @@ export default class Games {
             ? `LIMIT ${SqlString.escape(req.query.limit)}`
             : '';
 
-        const name = req.query.name || '';
+        const orderBy = req.query.order
+            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
+                  req.query.desc === 'true' ? 'DESC' : 'ASC'
+              }`
+            : '';
+
+        const filters = [];
+
+        if (req.query.name) {
+            filters.push(
+                `games.name ILIKE ${SqlString.escape(`${req.query.name}%`)}`
+            );
+        }
+
+        const where =
+            filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
 
         try {
             const query = `SELECT games.*, categories.name AS "categoryName"
@@ -20,9 +35,10 @@ export default class Games {
 
             const games = await connection.query(
                 `${query} 
-                WHERE games.name ILIKE $1
-                ${offset} ${limit}`,
-                [`${name}%`]
+                ${where}
+                ${orderBy}
+                ${offset}
+                ${limit}`
             );
 
             return res.status(200).json(games.rows);

@@ -14,6 +14,12 @@ export default class Rentals {
             ? `LIMIT ${SqlString.escape(req.query.limit)}`
             : '';
 
+        const orderBy = req.query.order
+            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
+                  req.query.desc === 'true' ? 'DESC' : 'ASC'
+              }`
+            : '';
+
         const filters = [];
 
         if (customerId) {
@@ -52,7 +58,11 @@ export default class Rentals {
             JOIN customers ON rentals."customerId" = customers.id`;
 
             const rentals = await connection.query(
-                `${query} ${where} ${offset} ${limit}`
+                `${query} 
+                ${where} 
+                ${orderBy} 
+                ${offset} 
+                ${limit}`
             );
 
             const rows = rentals.rows.map(

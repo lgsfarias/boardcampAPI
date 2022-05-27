@@ -11,10 +11,19 @@ export default class Categories {
             ? `LIMIT ${SqlString.escape(req.query.limit)}`
             : '';
 
+        const orderBy = req.query.order
+            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
+                  req.query.desc === 'true' ? 'DESC' : 'ASC'
+              }`
+            : '';
+
         try {
             const query = 'SELECT * FROM categories';
             const categories = await connection.query(
-                `${query} ${offset} ${limit}`
+                `${query}
+                ${orderBy}
+                ${offset}
+                ${limit}`
             );
 
             return res.status(200).json(categories.rows);

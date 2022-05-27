@@ -11,14 +11,29 @@ export default class Customers {
             ? `LIMIT ${SqlString.escape(req.query.limit)}`
             : '';
 
-        const cpf = req.query.cpf || '';
+        const orderBy = req.query.order
+            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
+                  req.query.desc === 'true' ? 'DESC' : 'ASC'
+              }`
+            : '';
+
+        const filters = [];
+
+        if (req.query.cpf) {
+            filters.push(`cpf ILIKE ${SqlString.escape(`${req.query.cpf}%`)}`);
+        }
+
+        const where =
+            filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
 
         try {
             const query = 'SELECT * FROM customers';
             const customers = await connection.query(
-                `${query} WHERE cpf LIKE $1 
-                ${offset} ${limit}`,
-                [`${cpf}%`]
+                `${query}
+                ${where}
+                ${orderBy}
+                ${offset}
+                ${limit}`
             );
 
             return res.status(200).json(customers.rows);
