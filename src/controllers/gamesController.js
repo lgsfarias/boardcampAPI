@@ -2,15 +2,19 @@ import connection from '../config/database.js';
 
 export default class Games {
     static getGames = async (req, res) => {
-        const { name } = req.query;
+        const offset = req.query.offset || 0;
+        const limit = req.query.limit || 10000;
+        const name = req.query.name || '';
+
         try {
             const games = await connection.query(
                 `SELECT games.*,
                 categories.name AS "categoryName" 
                     FROM games 
                     JOIN categories ON games."categoryId" = categories.id
-                    WHERE games.name ~* $1`,
-                [name ? `^${name}` : '']
+                    WHERE games.name LIKE $1
+                    OFFSET $2 LIMIT $3`,
+                [`%${name}%`, offset, limit]
             );
             return res.status(200).json(games.rows);
         } catch (error) {
