@@ -4,7 +4,7 @@ import connection from '../config/database.js';
 
 export default class Rentals {
     static getRentals = async (req, res) => {
-        const { customerId, gameId, status } = req.query;
+        const { customerId, gameId, status, startDate } = req.query;
 
         const offset = req.query.offset
             ? `OFFSET ${SqlString.escape(req.query.offset)}`
@@ -33,6 +33,12 @@ export default class Rentals {
             if (status === 'closed') {
                 filters.push(`rentals."returnDate" IS NOT NULL`);
             }
+        }
+
+        if (startDate) {
+            filters.push(
+                `rentals."rentDate" >= ${SqlString.escape(startDate)}`
+            );
         }
 
         const where =
