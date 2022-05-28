@@ -3,25 +3,28 @@ import connection from '../config/database.js';
 
 export default class Games {
     static getGames = async (req, res) => {
-        const offset = req.query.offset
-            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+        const offset = res.locals.query.offset
+            ? `OFFSET ${SqlString.escape(res.locals.query.offset)}`
             : '';
 
-        const limit = req.query.limit
-            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+        const limit = res.locals.query.limit
+            ? `LIMIT ${SqlString.escape(res.locals.query.limit)}`
             : '';
 
-        const orderBy = req.query.order
-            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
-                  req.query.desc === 'true' ? 'DESC' : 'ASC'
-              }`
+        const orderBy = res.locals.query.order
+            ? `ORDER BY "${SqlString.escape(res.locals.query.order).slice(
+                  1,
+                  -1
+              )}" ${res.locals.query.desc === 'true' ? 'DESC' : 'ASC'}`
             : '';
 
         const filters = [];
 
-        if (req.query.name) {
+        if (res.locals.query.name) {
             filters.push(
-                `games.name ILIKE ${SqlString.escape(`${req.query.name}%`)}`
+                `games.name ILIKE ${SqlString.escape(
+                    `${res.locals.query.name}%`
+                )}`
             );
         }
 
@@ -52,30 +55,10 @@ export default class Games {
     };
 
     static createGame = async (req, res) => {
-        const { name, image, stockTotal, categoryId, pricePerDay } = req.body;
-        if (!name || !(stockTotal > 0) || !(pricePerDay > 0)) {
-            //TODO: melhorar as validaçoes
-            return res
-                .status(400)
-                .send('Name, stockTotal and pricePerDay are required');
-        }
+        const { name, image, stockTotal, categoryId, pricePerDay } =
+            res.locals.game;
+
         try {
-            const categoryExists = await connection.query(
-                'SELECT * FROM categories WHERE id = $1',
-                [categoryId]
-            );
-            if (categoryExists.rows.length === 0) {
-                return res.status(400).send('Category not found');
-            }
-
-            const gameExists = await connection.query(
-                'SELECT * FROM games WHERE name = $1',
-                [name]
-            );
-            if (gameExists.rows.length > 0) {
-                return res.status(409).send('Game already exists');
-            }
-
             await connection.query(
                 'INSERT INTO games (name, image, "stockTotal", "categoryId", "pricePerDay") VALUES ($1, $2, $3, $4, $5)',
                 [name, image, stockTotal, categoryId, pricePerDay]

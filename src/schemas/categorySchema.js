@@ -7,7 +7,7 @@ const categorySchema = joi.object({
 const querySchema = joi.object({
     offset: joi.number().integer().min(0),
     limit: joi.number().integer().min(1),
-    order: joi.string().regex(/^[a-zA-Z0-9_]+$/),
+    order: joi.string().valid('id', 'name'),
     desc: joi.boolean(),
 });
 
