@@ -29,13 +29,17 @@ export default class Games {
             filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
 
         try {
-            const query = `SELECT games.*, categories.name AS "categoryName"
+            const query = `SELECT games.*, 
+            categories.name AS "categoryName",
+            COUNT (rentals.*) AS "rentalsCount"
             FROM games
-            JOIN categories ON games."categoryId" = categories.id`;
+            LEFT JOIN categories ON games."categoryId" = categories.id
+            LEFT JOIN rentals ON games.id = rentals."gameId"
+            ${where}
+            GROUP BY games.id, categories.name`;
 
             const games = await connection.query(
-                `${query} 
-                ${where}
+                `${query}
                 ${orderBy}
                 ${offset}
                 ${limit}`

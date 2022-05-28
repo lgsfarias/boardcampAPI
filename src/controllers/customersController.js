@@ -27,10 +27,15 @@ export default class Customers {
             filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
 
         try {
-            const query = 'SELECT * FROM customers';
+            const query = `SELECT customers.*, 
+            COUNT (rentals.*) AS "rentalsCount"
+            FROM customers
+            LEFT JOIN rentals ON customers.id = rentals."customerId"
+            ${where}
+            GROUP BY customers.id`;
+
             const customers = await connection.query(
                 `${query}
-                ${where}
                 ${orderBy}
                 ${offset}
                 ${limit}`
