@@ -223,4 +223,53 @@ export default class Rentals {
             });
         }
     };
+
+    static getMetrics = async (req, res) => {
+        const { startDate, endDate } = req.query;
+        const filters = [];
+
+        if (startDate) {
+            filters.push(
+                `rentals."rentDate" >= ${SqlString.escape(startDate)}`
+            );
+        }
+
+        if (endDate) {
+            filters.push(`rentals."rentDate" <= ${SqlString.escape(endDate)}`);
+        }
+
+        const where =
+            filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
+
+        try {
+            const query = `SELECT
+            COUNT(rentals.id) AS "totalRentals",
+            SUM(rentals."originalPrice") AS "totalRevenue",
+            SUM(rentals."delayFee") AS "totalDelayFee"
+            FROM rentals`;
+
+            const metrics = await connection.query(
+                `${query} 
+                ${where}`
+            );
+
+            const rows = metrics.rows.map(
+                ({ totalRentals, totalRevenue, totalDelayFee }) => ({
+                    revenue: 1 * totalRevenue + 1 * totalDelayFee,
+                    rentals: 1 * totalRentals,
+                    average:
+                        totalRentals > 0
+                            ? (1 * totalRevenue + 1 * totalDelayFee) /
+                              totalRentals
+                            : 0,
+                })
+            );
+
+            res.status(200).json(rows[0]);
+        } catch (err) {
+            res.status(500).json({
+                message: 'Error retrieving metrics',
+            });
+        }
+    };
 }

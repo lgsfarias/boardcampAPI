@@ -8,5 +8,6 @@ router.get('/rentals', Rentals.getRentals);
 router.post('/rentals', Rentals.createRental);
 router.post('/rentals/:id/return', Rentals.returnRental);
 router.delete('/rentals/:id', Rentals.deleteRental);
+router.get('/rentals/metrics', Rentals.getMetrics);
 
 export default router;
