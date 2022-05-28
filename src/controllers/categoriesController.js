@@ -3,18 +3,19 @@ import connection from '../config/database.js';
 
 export default class Categories {
     static getCategories = async (req, res) => {
-        const offset = req.query.offset
-            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+        const offset = res.locals.query.offset
+            ? `OFFSET ${SqlString.escape(res.locals.query.offset)}`
             : '';
 
-        const limit = req.query.limit
-            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+        const limit = res.locals.query.limit
+            ? `LIMIT ${SqlString.escape(res.locals.query.limit)}`
             : '';
 
-        const orderBy = req.query.order
-            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
-                  req.query.desc === 'true' ? 'DESC' : 'ASC'
-              }`
+        const orderBy = res.locals.query.order
+            ? `ORDER BY "${SqlString.escape(res.locals.query.order).slice(
+                  1,
+                  -1
+              )}" ${res.locals.query.desc === 'true' ? 'DESC' : 'ASC'}`
             : '';
 
         try {
@@ -33,19 +34,8 @@ export default class Categories {
     };
 
     static createCategory = async (req, res) => {
-        const { name } = req.body;
-        if (!name) {
-            return res.status(400).send('Name is required');
-        }
+        const { name } = res.locals.category;
         try {
-            const alrearyExists = await connection.query(
-                'SELECT * FROM categories WHERE name = $1',
-                [name]
-            );
-            if (alrearyExists.rows.length > 0) {
-                return res.status(409).send('Category already exists');
-            }
-
             await connection.query(
                 'INSERT INTO categories (name) VALUES ($1)',
                 [name]
