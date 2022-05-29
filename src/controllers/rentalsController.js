@@ -4,20 +4,21 @@ import connection from '../config/database.js';
 
 export default class Rentals {
     static getRentals = async (req, res) => {
-        const { customerId, gameId, status, startDate } = req.query;
+        const { customerId, gameId, status, startDate } = res.locals.query;
 
-        const offset = req.query.offset
-            ? `OFFSET ${SqlString.escape(req.query.offset)}`
+        const offset = res.locals.query.offset
+            ? `OFFSET ${SqlString.escape(res.locals.query.offset)}`
             : '';
 
-        const limit = req.query.limit
-            ? `LIMIT ${SqlString.escape(req.query.limit)}`
+        const limit = res.locals.query.limit
+            ? `LIMIT ${SqlString.escape(res.locals.query.limit)}`
             : '';
 
-        const orderBy = req.query.order
-            ? `ORDER BY "${SqlString.escape(req.query.order).slice(1, -1)}" ${
-                  req.query.desc === 'true' ? 'DESC' : 'ASC'
-              }`
+        const orderBy = res.locals.query.order
+            ? `ORDER BY "${SqlString.escape(res.locals.query.order).slice(
+                  1,
+                  -1
+              )}" ${res.locals.query.desc === 'true' ? 'DESC' : 'ASC'}`
             : '';
 
         const filters = [];
@@ -109,29 +110,10 @@ export default class Rentals {
     };
 
     static createRental = async (req, res) => {
-        const { customerId, gameId, daysRented } = req.body;
-        if (daysRented < 1) {
-            return res.status(400).send('Days rented must be greater than 0');
-        }
+        const { customerId, gameId, daysRented, originalPrice } =
+            res.locals.rental;
 
         try {
-            const game = await connection.query(
-                'SELECT * FROM games WHERE id = $1',
-                [gameId]
-            );
-            if (game.rows.length === 0) {
-                return res.status(400).send('Game not found');
-            }
-            const originalPrice = game.rows[0].pricePerDay * daysRented;
-
-            const customer = await connection.query(
-                'SELECT * FROM customers WHERE id = $1',
-                [customerId]
-            );
-            if (customer.rows.length === 0) {
-                return res.status(400).send('Customer not found');
-            }
-
             await connection.query(
                 `INSERT INTO rentals 
                 ("customerId", 
@@ -185,7 +167,10 @@ export default class Rentals {
             console.log({ delayFee });
 
             await connection.query(
-                `UPDATE rentals SET "returnDate" = $1, "delayFee" = $2 WHERE id = $3`,
+                `UPDATE rentals 
+                SET "returnDate" = $1, 
+                "delayFee" = $2 
+                WHERE id = $3`,
                 [returnDate, delayFee, rentalId]
             );
 
@@ -225,7 +210,8 @@ export default class Rentals {
     };
 
     static getMetrics = async (req, res) => {
-        const { startDate, endDate } = req.query;
+        const { startDate, endDate } = res.locals.metricsQuery;
+
         const filters = [];
 
         if (startDate) {

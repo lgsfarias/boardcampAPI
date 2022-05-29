@@ -38,7 +38,7 @@ export default class CategoriesMiddleware {
         }
     };
 
-    static checkQueryString = async (req, res, next) => {
+    static checkQueryString = (req, res, next) => {
         const { value, error } = querySchema.validate(req.query, {
             abortEarly: false,
         });
