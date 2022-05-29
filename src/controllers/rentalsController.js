@@ -164,7 +164,6 @@ export default class Rentals {
                 'days'
             );
             const delayFee = daysDelayed > 0 ? daysDelayed * pricePerDay : 0;
-            console.log({ delayFee });
 
             await connection.query(
                 `UPDATE rentals 
