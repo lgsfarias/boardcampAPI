@@ -53,41 +53,28 @@ export default class Rentals {
                 ${limit}`
             );
 
-            const rows = rentals.rows.map(
-                ({
-                    id,
-                    customerId,
-                    gameId,
-                    rentDate,
-                    daysRented,
-                    returnDate,
-                    originalPrice,
-                    delayFee,
-                    customerName,
-                    gameName,
-                    categoryId,
-                    categoryName,
-                }) => ({
-                    id,
-                    customerId,
-                    gameId,
-                    rentDate,
-                    daysRented,
-                    returnDate,
-                    originalPrice,
-                    delayFee,
+            const rows = rentals.rows.map((rental) => {
+                const newRental = {
+                    ...rental,
                     customer: {
-                        id: customerId,
-                        name: customerName,
+                        id: rental.customerId,
+                        name: rental.customerName,
                     },
                     game: {
-                        id: gameId,
-                        name: gameName,
-                        categoryId,
-                        categoryName,
+                        id: rental.gameId,
+                        name: rental.gameName,
+                        categoryId: rental.categoryId,
+                        categoryName: rental.categoryName,
                     },
-                })
-            );
+                };
+                delete newRental.customerName;
+                delete newRental.gameName;
+                delete newRental.categoryId;
+                delete newRental.categoryName;
+
+                return newRental;
+            });
+
             res.status(200).json(rows);
         } catch (err) {
             res.status(500).json({
