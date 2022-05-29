@@ -1,22 +1,10 @@
 import SqlString from 'sqlstring';
 import connection from '../config/database.js';
+import queryAux from '../utils/queryAux.js';
 
 export default class Customers {
     static getCustomers = async (req, res) => {
-        const offset = res.locals.query.offset
-            ? `OFFSET ${SqlString.escape(res.locals.query.offset)}`
-            : '';
-
-        const limit = res.locals.query.limit
-            ? `LIMIT ${SqlString.escape(res.locals.query.limit)}`
-            : '';
-
-        const orderBy = res.locals.query.order
-            ? `ORDER BY "${SqlString.escape(res.locals.query.order).slice(
-                  1,
-                  -1
-              )}" ${res.locals.query.desc === 'true' ? 'DESC' : 'ASC'}`
-            : '';
+        const { offset, limit, orderBy } = queryAux(res.locals.query);
 
         const filters = [];
 
