@@ -118,7 +118,7 @@ export default class Rentals {
                 [rentalId]
             );
             if (rental.rows.length === 0) {
-                return res.status(400).send('Rental not found');
+                return res.status(404).send('Rental not found');
             }
             if (rental.rows[0].returnDate) {
                 return res.status(400).send('Game already returned');
@@ -164,7 +164,7 @@ export default class Rentals {
                 [rentalId]
             );
             if (rental.rows.length === 0) {
-                return res.status(400).send('Rental not found');
+                return res.status(404).send('Rental not found');
             }
             if (rental.rows[0].returnDate) {
                 return res.status(400).send('Game already returned');
