@@ -14,6 +14,7 @@ const querySchema = joi.object({
         .string()
         .valid('id', 'name', 'phone', 'cpf', 'birthday', 'rentalsCount'),
     desc: joi.boolean(),
+    cpf: joi.string(),
 });
 
 export { customerSchema, querySchema };

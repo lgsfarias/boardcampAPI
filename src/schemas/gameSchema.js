@@ -23,6 +23,7 @@ const querySchema = joi.object({
             'rentalsCount'
         ),
     desc: joi.boolean(),
+    name: joi.string(),
 });
 
 export { gameSchema, querySchema };
