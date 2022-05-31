@@ -6,7 +6,7 @@ import queryAux from '../utils/queryAux.js';
 export default class Rentals {
     static getRentals = async (req, res) => {
         const { customerId, gameId, status, startDate } = res.locals.query;
-        const { offset, limit, orderBy } = queryAux(res.locals.query);
+        const { offset, limit, order } = queryAux(res.locals.query);
 
         const filters = [];
 
@@ -48,7 +48,7 @@ export default class Rentals {
             const rentals = await connection.query(
                 `${query} 
                 ${where} 
-                ${orderBy} 
+                ${order} 
                 ${offset} 
                 ${limit}`
             );

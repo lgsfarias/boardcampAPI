@@ -4,13 +4,13 @@ import queryAux from '../utils/queryAux.js';
 
 export default class Categories {
     static getCategories = async (req, res) => {
-        const { offset, limit, orderBy } = queryAux(res.locals.query);
+        const { offset, limit, order } = queryAux(res.locals.query);
 
         try {
             const query = 'SELECT * FROM categories';
             const categories = await connection.query(
                 `${query}
-                ${orderBy}
+                ${order}
                 ${offset}
                 ${limit}`
             );

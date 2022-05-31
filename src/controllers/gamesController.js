@@ -4,7 +4,7 @@ import queryAux from '../utils/queryAux.js';
 
 export default class Games {
     static getGames = async (req, res) => {
-        const { offset, limit, orderBy } = queryAux(res.locals.query);
+        const { offset, limit, order } = queryAux(res.locals.query);
 
         const filters = [];
 
@@ -31,7 +31,7 @@ export default class Games {
 
             const games = await connection.query(
                 `${query}
-                ${orderBy}
+                ${order}
                 ${offset}
                 ${limit}`
             );

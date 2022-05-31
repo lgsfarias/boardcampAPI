@@ -4,7 +4,7 @@ import queryAux from '../utils/queryAux.js';
 
 export default class Customers {
     static getCustomers = async (req, res) => {
-        const { offset, limit, orderBy } = queryAux(res.locals.query);
+        const { offset, limit, order } = queryAux(res.locals.query);
 
         const filters = [];
 
@@ -27,7 +27,7 @@ export default class Customers {
 
             const customers = await connection.query(
                 `${query}
-                ${orderBy}
+                ${order}
                 ${offset}
                 ${limit}`
             );
