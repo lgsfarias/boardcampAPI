@@ -9,7 +9,7 @@ const queryAux = (query) => {
 
     const order = query.order
         ? `ORDER BY "${SqlString.escape(query.order).slice(1, -1)}" ${
-              query.desc === 'true' ? 'DESC' : 'ASC'
+              query.desc ? 'DESC' : 'ASC'
           }`
         : '';
 
